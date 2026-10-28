@@ -2,6 +2,8 @@
 
 > 给 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)（dsh）会话日志「放气」的小工具。
 > **内容一个字不动，只换更省的分块方式。** 一条 40MB+ 的会话通常能压到 8~16MB。
+>
+> **适用于不想换掉「大肥鱼」初始会话的朋友们** —— 会话一直用同一条，文件肥了就重压一遍，不用换号、不用重新养。
 
 [中文](#它解决什么问题) · [English summary](#english)
 
