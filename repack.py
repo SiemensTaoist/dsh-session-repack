@@ -166,8 +166,11 @@ def main() -> int:
 
     if a.no_restart or not a.restart:
         log("没有 --restart：新文件已生成（*.repacked），DSH 停掉后手动替换即可")
+        log("提醒：替换前请再复制一份原文件（换盘/网盘）——别只靠同目录的自动备份")
         return 0
 
+    log("提醒：即将停 DSH 并替换文件，每份都会先留 *.repack-bak-<时间戳>")
+    log("      数据重要的话，现在 Ctrl+C 退出，改用 --no-restart 手动处理")
     log("停 DSH …")
     if not stop_dsh(a.exe or None):
         log("DSH 没停下来，放弃替换（新文件留着）")
