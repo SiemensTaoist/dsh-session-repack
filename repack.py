@@ -23,6 +23,7 @@ DSH 只校验第一块是不是正好一行 header，所以这么压它是认的
 from __future__ import annotations
 
 import argparse
+import json
 import io
 import os
 import platform
@@ -82,6 +83,13 @@ def repack_file(src: str, dst: str, level: int = 10) -> tuple[bool, str]:
         return False, f"读不出来：{e}"
     if len(rows) < 3:
         return False, "行数太少，跳过"
+    # header 内容校验：防止把已经损坏的文件再压一遍（2026-10-29 交叉验证建议）
+    try:
+        head_row = json.loads(rows[0])
+        if str(head_row.get("type")) != "session":
+            return False, "第一行不是 session header"
+    except Exception:
+        return False, "第一行解析不了（文件可能已损坏）"
     try:
         c = zstd.ZstdCompressor(level=level)
         f1 = c.compress((rows[0] + "\n").encode("utf-8"))
@@ -179,8 +187,10 @@ def main() -> int:
     done = 0
     for src, dst, old, new in prepared:
         try:
-            shutil.copy2(src, src + f".repack-bak-{int(time.time())}")
-            shutil.copy2(dst, src)
+            bak = src + f".repack-bak-{int(time.time())}"
+            shutil.copy2(src, bak)
+            # 原子替换：同盘 rename，中断时要么旧文件要么新文件，绝不会留下写了一半的会话
+            os.replace(dst, src)
             done += 1
             log(f"  已替换 {os.path.basename(os.path.dirname(src))}: {old/1048576:.1f}MB → {os.path.getsize(src)/1048576:.1f}MB")
         except Exception as e:  # noqa: BLE001
